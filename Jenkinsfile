@@ -44,17 +44,18 @@ pipeline {
 
         // ---------- STAGE 2: Static Code Analysis ----------
         stage('2. SonarQube Analysis') {
-            steps {
-                // 'sonar-server' + 'sonar-token' credential reused from e-commerce setup
-                withSonarQubeEnv('SonarQube') {
-                    sh """
-                        mvn clean compile sonar:sonar \
-                          -Dsonar.projectKey=${SONAR_KEY} \
-                          -Dsonar.projectName=${SONAR_KEY}
-                    """
-                }
-            }
+    steps {
+        withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+            sh """
+                mvn clean compile sonar:sonar \
+                -Dsonar.projectKey=${SONAR_KEY} \
+                -Dsonar.projectName=${SONAR_KEY} \
+                -Dsonar.host.url=http://13.207.2.177:9000 \
+                -Dsonar.login=$SONAR_TOKEN
+            """
         }
+    }
+}
 
         // ---------- STAGE 3: Quality Gate Decision ----------
         stage('3. Quality Gate') {
