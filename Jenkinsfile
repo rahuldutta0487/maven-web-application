@@ -32,7 +32,7 @@ pipeline {
                     -Dsonar.projectKey=maven-web-app \
                     -Dsonar.projectName=maven-web-app \
                     -Dsonar.host.url=http://13.207.2.177:9000 \
-                    -Dsonar.login=squ_10d5f5237c553c596ef7951cdd0cc5e5fe654121
+                    -Dsonar.login=sqa_d5d1febdc30c8c5de5b03378be006e57a50fbf89
                 '''
             }
         }
