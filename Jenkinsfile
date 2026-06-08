@@ -46,7 +46,7 @@ pipeline {
         stage('2. SonarQube Analysis') {
             steps {
                 // 'sonar-server' + 'sonar-token' credential reused from e-commerce setup
-                withSonarQubeEnv("${SONAR_SERVER}") {
+                withSonarQubeEnv('SonarQube') {
                     sh """
                         mvn clean compile sonar:sonar \
                           -Dsonar.projectKey=${SONAR_KEY} \
