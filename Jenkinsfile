@@ -35,11 +35,12 @@ pipeline {
                         -Dsonar.projectKey=maven-web-app \
                         -Dsonar.projectName=maven-web-app \
                         -Dsonar.host.url=http://13.207.2.177:9000 \
-                        -Dsonar.token=$SONAR_TOKEN
+                        -Dsonar.token=squ_10d5f5237c553c596ef7951cdd0cc5e5fe654121
                     '''
                 }
             }
         }
+        
 
         stage('3. Quality Gate') {
             steps {
