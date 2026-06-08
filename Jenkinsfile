@@ -27,18 +27,17 @@ pipeline {
             }
         }
 
-        stage('2. SonarQube Analysis') {
-            steps {
-                withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
-                    sh '''
-                        mvn clean compile sonar:sonar \
-                        -Dsonar.projectKey=maven-web-app \
-                        -Dsonar.projectName=maven-web-app \
-                        -Dsonar.host.url=http://13.207.2.177:9000 \
-                        -Dsonar.login=squ_10d5f5237c553c596ef7951cdd0cc5e5fe654121
-                    '''
-                }
-            }
+       stage('2. SonarQube Analysis') {
+    steps {
+        sh '''
+            mvn clean compile sonar:sonar \
+            -Dsonar.projectKey=maven-web-app \
+            -Dsonar.projectName=maven-web-app \
+            -Dsonar.host.url=http://13.207.2.177:9000 \
+            -Dsonar.login=squ_10d5f5237c553c596ef7951cdd0cc5e5fe654121
+        '''
+    }
+}
         }
         
 
