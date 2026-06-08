@@ -11,8 +11,8 @@ pipeline {
 
     // Tools already configured globally in Manage Jenkins -> Tools (reused)
     tools {
-        maven 'maven3'   // <-- name MUST match your Jenkins Maven tool name
-        jdk   'jdk17'    // <-- name MUST match your Jenkins JDK tool name (or remove if using system JDK)
+        maven 'maven'   // <-- name MUST match your Jenkins Maven tool name
+        // <-- name MUST match your Jenkins JDK tool name (or remove if using system JDK)
     }
 
     environment {
