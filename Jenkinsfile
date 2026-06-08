@@ -1,29 +1,15 @@
-// =====================================================================
-// Enterprise CI/CD Pipeline — Java Maven Web Application (Milestone 3)
-// Jenkins (Declarative) | SonarQube Quality Gate | Maven WAR | Ansible -> Tomcat
-//
-// REUSES the same Jenkins / SonarQube / Tomcat / Ansible from the e-commerce
-// case study. Only the repo URL, Sonar project key and WAR name change.
-// =====================================================================
-
 pipeline {
     agent any
 
-    // Tools already configured globally in Manage Jenkins -> Tools (reused)
     tools {
-        maven 'Maven'   // <-- name MUST match your Jenkins Maven tool name
-        // <-- name MUST match your Jenkins JDK tool name (or remove if using system JDK)
+        maven 'Maven'
     }
 
     environment {
-        // ---- EDIT THESE 4 VALUES ----
-        APP_REPO     = 'https://github.com/rahuldutta0487/maven-web-application.git'  // instructor's Maven repo
-        APP_BRANCH   = 'master'                       // or 'master'
-        SONAR_KEY    = 'maven-web-app'              // new Sonar project (token is reused)
-        WAR_NAME     = 'maven-web-app.war'          // final WAR name copied to Tomcat
-        // -----------------------------
-
-        SONAR_SERVER = 'sonar-server'               // name of SonarQube server in Jenkins (reused)
+        APP_REPO   = 'https://github.com/rahuldutta0487/maven-web-application.git'
+        APP_BRANCH = 'master'
+        SONAR_KEY  = 'maven-web-app'
+        WAR_NAME   = 'maven-web-app.war'
     }
 
     options {
@@ -33,46 +19,40 @@ pipeline {
 
     stages {
 
-        // ---------- STAGE 1: Source Code Management ----------
         stage('1. Checkout') {
             steps {
                 echo "Cloning ${APP_REPO} (${APP_BRANCH})"
                 git branch: "${APP_BRANCH}", url: "${APP_REPO}"
-                sh 'git log -1 --oneline'   // version tracking
+                sh 'git log -1 --oneline'
             }
         }
 
-        // ---------- STAGE 2: Static Code Analysis ----------
         stage('2. SonarQube Analysis') {
-    steps {
-        withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
-            sh """
-                mvn clean compile sonar:sonar \
-                -Dsonar.projectKey=${SONAR_KEY} \
-                -Dsonar.projectName=${SONAR_KEY} \
-                -Dsonar.host.url=http://13.207.2.177:9000 \
-                -Dsonar.login=$SONAR_TOKEN
-            """
+            steps {
+                withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+                    sh '''
+                        mvn clean compile sonar:sonar \
+                        -Dsonar.projectKey=maven-web-app \
+                        -Dsonar.projectName=maven-web-app \
+                        -Dsonar.host.url=http://13.207.2.177:9000 \
+                        -Dsonar.token=$SONAR_TOKEN
+                    '''
+                }
+            }
         }
-    }
-}
 
-        // ---------- STAGE 3: Quality Gate Decision ----------
         stage('3. Quality Gate') {
             steps {
                 timeout(time: 5, unit: 'MINUTES') {
-                    // Pipeline ABORTS automatically if gate = FAIL  (abortPipeline: true)
                     waitForQualityGate abortPipeline: true
                 }
             }
         }
 
-        // ---------- STAGE 4: Application Build (WAR) ----------
         stage('4. Build WAR') {
             steps {
                 sh 'mvn clean package -DskipTests'
                 sh 'ls -lh target/*.war'
-                // Normalise the artifact name so deploy is predictable
                 sh "cp target/*.war ${WORKSPACE}/${WAR_NAME}"
             }
             post {
@@ -82,25 +62,22 @@ pipeline {
             }
         }
 
-        // ---------- STAGE 5: Deployment Automation (Ansible -> Tomcat) ----------
         stage('5. Deploy via Ansible') {
             steps {
-                // deploy.yml: stop Tomcat -> remove old WAR -> copy new WAR -> start -> verify
                 sh """
                     ansible-playbook -i hosts.txt deploy.yml \
-                      --extra-vars "war_src=${WORKSPACE}/${WAR_NAME} war_name=${WAR_NAME}"
+                    --extra-vars "war_src=${WORKSPACE}/${WAR_NAME} war_name=${WAR_NAME}"
                 """
             }
         }
     }
 
-    // ---------- Post / Notifications / Failure handling ----------
     post {
         success {
             echo "✅ Pipeline SUCCESS — deployed ${WAR_NAME} to Tomcat."
         }
         failure {
-            echo "❌ Pipeline FAILED — Tomcat was NOT updated (previous version still serving). Check logs."
+            echo "❌ Pipeline FAILED — Tomcat was NOT updated. Check logs."
         }
         always {
             echo "Build #${env.BUILD_NUMBER} finished with status: ${currentBuild.currentResult}"
