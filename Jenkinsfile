@@ -18,7 +18,7 @@ pipeline {
     environment {
         // ---- EDIT THESE 4 VALUES ----
         APP_REPO     = 'https://github.com/rahuldutta0487/maven-web-application.git'  // instructor's Maven repo
-        APP_BRANCH   = 'main'                       // or 'master'
+        APP_BRANCH   = 'master'                       // or 'master'
         SONAR_KEY    = 'maven-web-app'              // new Sonar project (token is reused)
         WAR_NAME     = 'maven-web-app.war'          // final WAR name copied to Tomcat
         // -----------------------------
